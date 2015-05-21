@@ -3,17 +3,23 @@
 {-# LANGUAGE QuasiQuotes           #-}
 {-# LANGUAGE TemplateHaskell       #-}
 {-# LANGUAGE TypeFamilies          #-}
+import           Control.Monad.Logger        (runNoLoggingT)
 import           Data.Default                (def)
 import           Data.Text                   (Text)
 import           Network.HTTP.Client.Conduit (Manager, newManager)
+import           Database.Persist.Sqlite
 import           Yesod
 import           Yesod.Auth
 import           Yesod.Auth.BrowserId
 import           Yesod.Auth.GoogleEmail
 
-data App = App
+import Model
+
+data AppBackend = AppBackend
     { httpManager :: Manager
+    , sqlBackend  :: SqlBackend 
     }
+data App = App AppBackend
 
 mkYesod "App" [parseRoutes|
 / HomeR GET
@@ -21,11 +27,16 @@ mkYesod "App" [parseRoutes|
 |]
 
 instance Yesod App where
-    approot = ApprootStatic "https://5dfa35fe-39d2-46ee-ad43-0cb4290736df-app.fpcomplete.com"
+    approot = ApprootStatic "https://df60e5f6-f4c7-422c-ba32-e1ec1f5f26c2-app.fpcomplete.com"
+
+instance YesodPersist App where
+    type YesodPersistBackend App = SqlBackend
+    runDB f = do
+        App backend <- getYesod
+        runSqlConn f $ sqlBackend backend
 
 instance YesodAuth App where
-    type AuthId App = Text
-    getAuthId = return . Just . credsIdent
+    type AuthId App = UserId
 
     loginDest _ = HomeR
     logoutDest _ = HomeR
@@ -35,11 +46,15 @@ instance YesodAuth App where
         , authGoogleEmail
         ]
 
-    authHttpManager = httpManager
+    -- Need to find the UserId for the given email address.
+    getAuthId creds = runDB $ do
+        x <- insertBy $ User (credsIdent creds) Nothing Nothing False
+        return $ Just $
+            case x of
+                Left (Entity userid _) -> userid -- newly added user
+                Right userid -> userid -- existing user
 
-    -- The default maybeAuthId assumes a Persistent database. We're going for a
-    -- simpler AuthId, so we'll just do a direct lookup in the session.
-    maybeAuthId = lookupSession "_ID"
+    authHttpManager (App backend) = httpManager backend
 
 instance RenderMessage App FormMessage where
     renderMessage _ _ = defaultFormMessage
@@ -59,6 +74,9 @@ getHomeR = do
         |]
 
 main :: IO ()
-main = do
-    man <- newManager
-    warpEnv $ App man
+main = runNoLoggingT $ withSqliteConn "faces" $ \conn -> liftIO $
+    do
+        man <- newManager
+        let backend = AppBackend man conn
+        runSqlConn (runMigration migrateAll) conn
+        warpEnv $ App backend
