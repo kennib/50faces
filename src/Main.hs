@@ -5,19 +5,21 @@
 {-# LANGUAGE TypeFamilies          #-}
 import           Control.Monad.Logger        (runNoLoggingT)
 import           Data.Default                (def)
-import           Data.Text                   (Text)
+import           Data.Text                   (Text, pack)
 import           Network.HTTP.Client.Conduit (Manager, newManager)
 import           Database.Persist.Sqlite
 import           Yesod
 import           Yesod.Auth
 import           Yesod.Auth.BrowserId
 import           Yesod.Auth.GoogleEmail
+import           System.Environment
 
 import Model
 
 data AppBackend = AppBackend
     { httpManager :: Manager
-    , sqlBackend  :: SqlBackend 
+    , sqlBackend  :: SqlBackend
+    , root        :: Text
     }
 data App = App AppBackend
 
@@ -27,7 +29,7 @@ mkYesod "App" [parseRoutes|
 |]
 
 instance Yesod App where
-    approot = ApprootStatic "https://df60e5f6-f4c7-422c-ba32-e1ec1f5f26c2-app.fpcomplete.com"
+    approot = ApprootMaster $ \(App backend) -> root backend
 
 instance YesodPersist App where
     type YesodPersistBackend App = SqlBackend
@@ -77,6 +79,7 @@ main :: IO ()
 main = runNoLoggingT $ withSqliteConn "faces" $ \conn -> liftIO $
     do
         man <- newManager
-        let backend = AppBackend man conn
+        root <- fmap pack $ getEnv "APPROOT"
+        let backend = AppBackend man conn root
         runSqlConn (runMigration migrateAll) conn
         warpEnv $ App backend
