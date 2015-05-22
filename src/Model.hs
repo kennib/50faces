@@ -10,6 +10,7 @@
 module Model where
 import           Data.Text                   (Text)
 import           Data.Typeable               (Typeable)
+import           Data.Time.Clock             (UTCTime)
 import           Database.Persist.Sqlite
 import           Database.Persist.TH
 
@@ -20,5 +21,10 @@ User
     verkey Text Maybe -- Used for resetting passwords
     verified Bool
     UniqueUser email
+    deriving Typeable
+Face
+    user UserId
+    image Text
+    time UTCTime
     deriving Typeable
 |]
