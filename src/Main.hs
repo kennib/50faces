@@ -115,11 +115,13 @@ getFacesR = do
         Just user -> runDB $ selectList [FriendUser ==. user, FriendCurrent ==. True] [Desc FriendTime]
         Nothing -> return []
 
-    faces <- fmap (map entityVal) $ case maid of
-        Just user -> runDB $ selectList [FaceUser <-. friends, FaceCurrent ==. True] [Desc FaceTime]
-        Nothing -> return []
+    profiles <- fmap (map entityVal) $ do
+        runDB $ selectList [ProfileUser <-. friends, ProfileCurrent ==. True] [Desc ProfileTime]
 
-    let friendlyFaces = zip friends faces
+    faces <- fmap (map entityVal) $ do
+        runDB $ selectList [FaceUser <-. friends, FaceCurrent ==. True] [Desc FaceTime]
+
+    let friendlyFaces = zip profiles faces
 
     defaultLayout $ do
         setTitle "Friendly faces"
@@ -128,10 +130,10 @@ getFacesR = do
                 <p>No friendly faces
             $else
                 <ul>
-                    $forall (friend, face) <- friendlyFaces
+                    $forall (profile, face) <- friendlyFaces
                         <li>
                             <img src=#{faceImage face}>
-                            <p>#{show friend}
+                            <p>#{profileName profile}
         |]
 
 getFaceR :: Handler Html
@@ -181,7 +183,7 @@ getProfileR = do
             mprofile <- runDB $ selectFirst [ProfileUser ==. user, ProfileCurrent ==. True] [Desc ProfileTime]
             return $ fmap entityVal mprofile
         Nothing -> return Nothing
-    
+
     ((result, widget), enctype) <- case maid of
         Just user -> runFormPost $ profileForm $ case mprofile of
             Just profile -> Left profile
