@@ -5,6 +5,7 @@
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell #-}
 {-# LANGUAGE GADTs,OverloadedStrings,FlexibleContexts, FlexibleInstances #-}
+import           Data.Monoid                 ((<>))
 import           Control.Applicative
 import           Control.Monad.Logger        (runNoLoggingT)
 import           Data.Default                (def)
@@ -36,6 +37,7 @@ mkYesod "App" [parseRoutes|
 / HomeR GET
 /auth AuthR Auth getAuth
 /faces FacesR GET
+/message/#Integer MessageR GET POST
 /addface FaceR GET POST
 /profile ProfileR GET POST
 |]
@@ -43,9 +45,11 @@ mkYesod "App" [parseRoutes|
 instance Yesod App where
     approot = ApprootMaster $ \(App backend) -> root backend
 
-    isAuthorized FaceR True = isLoggedIn
-    isAuthorized FaceR _ = isLoggedIn
     isAuthorized FacesR _ = isLoggedIn
+    isAuthorized (MessageR id) _ = isLoggedIn
+
+    isAuthorized FaceR _ = isLoggedIn
+    isAuthorized FaceR _ = isLoggedIn
     isAuthorized ProfileR _ = isLoggedIn
 
     isAuthorized _ _ = return Authorized
@@ -135,6 +139,37 @@ getFacesR = do
                             <img src=#{faceImage face}>
                             <p>#{profileName profile}
         |]
+
+getMessageR :: Integer -> Handler Html
+getMessageR friendId = do
+    let friendKey = toSqlKey (fromInteger friendId)
+    maid <- maybeAuthId
+
+    mface <- do
+        mface <- runDB $ selectFirst [FaceUser ==. friendKey, FaceCurrent ==. True] [Desc FaceTime]
+        return $ fmap entityVal $ mface
+
+    mprofile <- do
+        mprofile <- runDB $ selectFirst [ProfileUser ==. friendKey, ProfileCurrent ==. True] [Desc ProfileTime]
+        return $ fmap entityVal $ mprofile
+
+    defaultLayout $ do
+        setTitle $ case mprofile of
+            Just profile-> toHtml $ "Message " <> profileName profile
+            Nothing -> "Message no one"
+
+        [whamlet|
+            $maybe profile <- mprofile
+                $maybe face <- mface
+                    <img src=#{faceImage face}>
+                <p>#{profileName profile}
+                <textarea>
+            $nothing
+                <p>No one exists with ID #{friendId}
+        |]
+
+postMessageR :: Integer -> Handler Html
+postMessageR = getMessageR
 
 getFaceR :: Handler Html
 getFaceR = do
