@@ -26,5 +26,12 @@ Face
     user UserId
     image Text
     time UTCTime
+    current Bool
+    deriving Typeable
+Friend
+    user UserId
+    friend UserId
+    time UTCTime
+    current Bool
     deriving Typeable
 |]

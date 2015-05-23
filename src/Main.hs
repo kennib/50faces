@@ -23,6 +23,7 @@ import           System.Environment
 import Debug.Trace
 
 import Model
+import Examples
 
 data AppBackend = AppBackend
     { httpManager :: Manager
@@ -34,6 +35,7 @@ data App = App AppBackend
 mkYesod "App" [parseRoutes|
 / HomeR GET
 /auth AuthR Auth getAuth
+/faces FacesR GET
 /addface FaceR GET POST
 |]
 
@@ -42,6 +44,7 @@ instance Yesod App where
 
     isAuthorized FaceR True = isLoggedIn
     isAuthorized FaceR _ = isLoggedIn
+    isAuthorized FacesR _ = isLoggedIn
 
     isAuthorized _ _ = return Authorized
 
@@ -92,10 +95,39 @@ getHomeR = do
                 <p>
                     <a href=@{FaceR}>Update your face
                 <p>
+                    <a href=@{FacesR}>See friendly faces
+                <p>
                     <a href=@{AuthR LogoutR}>Logout
             $nothing
                 <p>
                     <a href=@{AuthR LoginR}>Go to the login page
+        |]
+
+getFacesR :: Handler Html
+getFacesR = do
+    maid <- maybeAuthId
+
+    friends <- fmap (map (friendFriend . entityVal)) $ case maid of
+        Just user -> runDB $ selectList [FriendUser ==. user, FriendCurrent ==. True] [Desc FriendTime]
+        Nothing -> return []
+
+    faces <- fmap (map entityVal) $ case maid of
+        Just user -> runDB $ selectList [FaceUser <-. friends, FaceCurrent ==. True] [Desc FaceTime]
+        Nothing -> return []
+
+    let friendlyFaces = zip friends faces
+
+    defaultLayout $ do
+        setTitle "Friendly faces"
+        [whamlet|
+            $if null faces
+                <p>No friendly faces
+            $else
+                <ul>
+                    $forall (friend, face) <- friendlyFaces
+                        <li>
+                            <img src=#{faceImage face}>
+                            <p>#{show friend}
         |]
 
 getFaceR :: Handler Html
@@ -133,12 +165,14 @@ faceForm userId = renderDivs $ Face
     <$> pure userId
     <*> areq textField "Face URL" Nothing
     <*> lift (liftIO getCurrentTime)
+    <*> pure True
 
 main :: IO ()
-main = runNoLoggingT $ withSqliteConn "faces" $ \conn -> liftIO $
+main = runNoLoggingT $ withSqliteConn "50faces" $ \conn -> liftIO $
     do
         man <- newManager
         root <- fmap pack $ getEnv "APPROOT"
         let backend = AppBackend man conn root
         runSqlConn (runMigration migrateAll) conn
+        runSqlConn loadExamples conn
         warpEnv $ App backend
