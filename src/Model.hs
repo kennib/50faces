@@ -22,6 +22,15 @@ User
     verified Bool
     UniqueUser email
     deriving Typeable
+Profile
+    user UserId
+    name Text
+    age Int Maybe
+    gender Text Maybe
+    location Text Maybe
+    time UTCTime
+    current Bool
+    deriving Typeable
 Face
     user UserId
     image Text

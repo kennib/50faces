@@ -37,6 +37,7 @@ mkYesod "App" [parseRoutes|
 /auth AuthR Auth getAuth
 /faces FacesR GET
 /addface FaceR GET POST
+/profile ProfileR GET POST
 |]
 
 instance Yesod App where
@@ -45,6 +46,7 @@ instance Yesod App where
     isAuthorized FaceR True = isLoggedIn
     isAuthorized FaceR _ = isLoggedIn
     isAuthorized FacesR _ = isLoggedIn
+    isAuthorized ProfileR _ = isLoggedIn
 
     isAuthorized _ _ = return Authorized
 
@@ -94,6 +96,8 @@ getHomeR = do
             $maybe _ <- maid
                 <p>
                     <a href=@{FaceR}>Update your face
+                <p>
+                    <a href=@{ProfileR}>Update your profile
                 <p>
                     <a href=@{FacesR}>See friendly faces
                 <p>
@@ -168,6 +172,64 @@ faceForm userId = renderDivs $ Face
     <*> areq textField "Face URL" Nothing
     <*> lift (liftIO getCurrentTime)
     <*> pure True
+
+getProfileR :: Handler Html
+getProfileR = do
+    maid <- maybeAuthId
+    mprofile <- case maid of
+        Just user -> do
+            mprofile <- runDB $ selectFirst [ProfileUser ==. user, ProfileCurrent ==. True] [Desc ProfileTime]
+            return $ fmap entityVal mprofile
+        Nothing -> return Nothing
+    
+    ((result, widget), enctype) <- case maid of
+        Just user -> runFormPost $ profileForm $ case mprofile of
+            Just profile -> Left profile
+            Nothing -> Right user
+        Nothing -> error "No user"
+
+    mprofile <- case (result, maid) of
+        (FormSuccess profile, Just user) -> do
+            runDB $ do
+                notCurrent ProfileCurrent [ProfileUser ==. user]
+                insert profile
+            return $ Just profile
+        (_, Just user) -> do
+            return mprofile
+        _ -> return Nothing
+
+    defaultLayout $ do
+        setTitle "Update your profile"
+        [whamlet|
+            $maybe profile <- mprofile
+                <p>#{profileName profile}'s Profile
+            $nothing
+                <p>You don't have a profile yet!
+            <form method=post action=@{ProfileR} enctype=#{enctype}>
+                ^{widget}
+                <input type=submit value="Update your profile">
+        |]
+
+postProfileR :: Handler Html
+postProfileR = getProfileR
+
+profileForm defaults = renderDivs $ case defaults of
+    Left profile -> Profile
+        <$> pure (profileUser profile)
+        <*> areq textField "Name" (Just (profileName profile))
+        <*> aopt intField "Age" (Just (profileAge profile))
+        <*> aopt textField "Gender" (Just (profileGender profile))
+        <*> aopt textField "Location" (Just (profileLocation profile))
+        <*> lift (liftIO getCurrentTime)
+        <*> pure True
+    Right user -> Profile
+        <$> pure user
+        <*> areq textField "Name" Nothing
+        <*> aopt intField "Age" Nothing
+        <*> aopt textField "Gender" Nothing
+        <*> aopt textField "Location" Nothing
+        <*> lift (liftIO getCurrentTime)
+        <*> pure True
 
 main :: IO ()
 main = runNoLoggingT $ withSqliteConn "50faces" $ \conn -> liftIO $

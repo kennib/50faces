@@ -20,6 +20,9 @@ loadExamples = do
     george <- fmap entityKey $ upsert (User "george@example.com" Nothing Nothing True) []
     kenni  <- fmap entityKey $ upsert (User "kenni.bawden@gmail.com" Nothing Nothing True) []
 
+    notCurrent ProfileCurrent $ [FilterOr [ProfileUser ==. jenny, ProfileUser ==. george]]
+    insert (Profile jenny "Jenny" Nothing Nothing Nothing now True)
+    insert (Profile george "The Big G" Nothing Nothing Nothing now True)
 
     notCurrent FaceCurrent $ [FilterOr [FaceUser ==. jenny, FaceUser ==. george, FaceUser ==. kenni]]
     insert (Face jenny "http://i.imgur.com/WWcyFAUb.jpg" now True)
