@@ -31,5 +31,3 @@ loadExamples = do
     insert (Friend kenni george now True)
 
     return ()
-
-notCurrent current filters = updateWhere ([current ==. True] ++ filters) [current =. False]

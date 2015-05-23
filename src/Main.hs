@@ -139,10 +139,12 @@ getFaceR = do
 
     mface <- case (result, maid) of
         (FormSuccess face, Just user) -> do
-            runDB $ insert face
+            runDB $ do
+                notCurrent FaceCurrent [FaceUser ==. user]
+                insert face
             return $ Just face
         (_, Just user) -> do
-            mface <- runDB $ selectFirst [] [Desc FaceTime]
+            mface <- runDB $ selectFirst [FaceUser ==. user, FaceCurrent ==. True] [Desc FaceTime]
             return $ fmap entityVal mface
         _ -> return Nothing
 

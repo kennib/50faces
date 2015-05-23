@@ -35,3 +35,5 @@ Friend
     current Bool
     deriving Typeable
 |]
+
+notCurrent current filters = updateWhere ([current ==. True] ++ filters) [current =. False]
