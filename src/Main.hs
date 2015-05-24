@@ -91,7 +91,7 @@ instance Yesod App where
                             <a href=@{HomeR}>50 Faces
 
                         $maybe id <- maid
-                            <span .profile>
+                            <span .page-profile>
                                 $maybe face <- mface
                                     <a href=@{FaceR}>
                                         <img src=#{faceImage face}>
@@ -105,7 +105,7 @@ instance Yesod App where
                                 <a .login href=@{AuthR LoginR}>Sign up or login
 
                     $maybe msg <- mmsg
-                        <div .message>#{msg}
+                        <div .page-message>#{msg}
 
                     ^{bodyTags}
         |]
@@ -222,16 +222,20 @@ getMessageR friendId = do
             Just profile-> toHtml $ "Message " <> profileName profile
             Nothing -> "Message no one"
 
+        addStylesheet $ StaticR style_messages_css
+
         [whamlet|
             $maybe profile <- mprofile
-                $maybe face <- mface
-                    <img src=#{faceImage face}>
-                <p>#{profileName profile}
+                <aside .profile>
+                    $maybe face <- mface
+                        <img src=#{faceImage face}>
+                    <p>#{profileName profile}
 
-                $forall message <- messages
-                    <p>#{messageMessage message}
+                <ul .messages>
+                    $forall message <- messages
+                        <li .message>#{messageMessage message}
 
-                <form method=post action=@{MessageR friendId} enctype=#{enctype}>
+                <form .message-post method=post action=@{MessageR friendId} enctype=#{enctype}>
                     ^{widget}
                     <input type=submit value="Post message">
             $nothing
@@ -244,7 +248,7 @@ postMessageR = getMessageR
 messageForm from to = renderDivs $ Message
     <$> pure from
     <*> pure to
-    <*> areq textField "Message" Nothing
+    <*> areq textField "" Nothing
     <*> lift (liftIO getCurrentTime)
 
 getFaceR :: Handler Html

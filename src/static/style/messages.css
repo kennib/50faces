@@ -1,0 +1,53 @@
+.messages {
+    list-style-type: none;
+    -webkit-margin-before: 0px;
+    -webkit-margin-after: 0px;
+    -webkit-margin-start: 0px;
+    -webkit-margin-end: 0px;
+    -webkit-padding-start: 0px;
+}
+
+    .messages .message {
+        margin: 16px;
+    }
+
+    .messages .message:nth-child(even) {
+        background: #eee;
+    }
+
+.message-post {
+    display: block;
+    text-align: center;
+}
+    .message-post div {
+        display: inline-block;
+        width: 70%;
+        min-width: 250px;
+    }
+
+        .message-post div input {
+            width: 100%;
+        }
+
+    .message-post input[type=submit] {
+        width: auto;
+    }
+
+.profile {
+    float: right;
+    width: 192px;
+
+    margin-left: 16px;
+    margin-bottom: 8px;
+
+    background: #e1e1e1;
+}
+
+    .profile img {
+        width: 192px;
+        height: auto;
+    }
+
+    .profile p {
+        padding-left: 8px;
+    }

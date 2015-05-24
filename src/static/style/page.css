@@ -15,7 +15,7 @@ body {
         vertical-align: top;
     }
 
-    .header .profile {
+    .header .page-profile {
         float: right;
         line-height: 0px;
         background: #e1e1e1;
@@ -24,14 +24,14 @@ body {
             text-decoration: none;
         }
 
-        .header .profile img {
+        .header .page-profile img {
             height: 40px;
             margin: 4px;
         }
 
-        .header .profile .name,
-        .header .profile .login,
-        .header .profile .logout {
+        .header .page-profile .name,
+        .header .page-profile .login,
+        .header .page-profile .logout {
             display: inline-block;
             line-height: 18px;
             font-size: 18px;
@@ -39,11 +39,11 @@ body {
             vertical-align: top;
         }
 
-        .header .profile .name {
+        .header .page-profile .name {
             font-weight: bold;
         }
 
-.message {
+.page-message {
     padding: 10px;
     background: #ccc;
 }
