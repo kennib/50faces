@@ -53,6 +53,53 @@ instance Yesod App where
 
     isAuthorized _ _ = return Authorized
 
+    defaultLayout contents = do
+        PageContent title headTags bodyTags <- widgetToPageContent contents
+        mmsg <- getMessage
+
+        maid <- maybeAuthId
+        mface <- case maid of
+            Just user -> do
+                mface <- runDB $ selectFirst [FaceUser ==. user, FaceCurrent ==. True] [Desc FaceTime]
+                return $ fmap entityVal mface
+            Nothing -> return Nothing
+        mprofile <- case maid of
+            Just user -> do
+                mprofile <- runDB $ selectFirst [ProfileUser ==. user, ProfileCurrent ==. True] [Desc ProfileTime]
+                return $ fmap entityVal mprofile
+            Nothing -> return Nothing
+
+        withUrlRenderer [hamlet|
+            $doctype 5
+
+            <html>
+                <head>
+                    <title>#{title}
+                    ^{headTags}
+                <body>
+                    <header>
+                        <span>
+                            <a href=@{HomeR}>50 Faces
+
+                        $maybe id <- maid
+                            <span>
+                                $maybe face <- mface
+                                    <a href=@{FaceR}>
+                                        <img src=#{faceImage face}>
+                                $maybe profile <- mprofile
+                                    <a href=@{ProfileR}>#{profileName profile}
+                                $nothing
+                                    <a href=@{ProfileR}>New User
+                                <a href=@{AuthR LogoutR}>Logout
+                        $nothing
+                            <span>
+                                <a href=@{AuthR LoginR}>Sign up or login
+
+                    $maybe msg <- mmsg
+                        <div #message>#{msg}
+
+                    ^{bodyTags}
+        |]
 
 instance YesodPersist App where
     type YesodPersistBackend App = SqlBackend
@@ -93,22 +140,13 @@ isLoggedIn = do
 getHomeR :: Handler Html
 getHomeR = do
     maid <- maybeAuthId
-    defaultLayout
-        [whamlet|
-            <p>Your current auth ID: #{show maid}
-            $maybe _ <- maid
+    case maid of
+        Just id -> getFacesR
+        Nothing -> defaultLayout
+            [whamlet|
                 <p>
-                    <a href=@{FaceR}>Update your face
-                <p>
-                    <a href=@{ProfileR}>Update your profile
-                <p>
-                    <a href=@{FacesR}>See friendly faces
-                <p>
-                    <a href=@{AuthR LogoutR}>Logout
-            $nothing
-                <p>
-                    <a href=@{AuthR LoginR}>Go to the login page
-        |]
+                    <a href=@{AuthR LoginR}>Sign up or login
+            |]
 
 getFacesR :: Handler Html
 getFacesR = do
