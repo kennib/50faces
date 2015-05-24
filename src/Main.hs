@@ -15,6 +15,7 @@ import           Network.HTTP.Client.Conduit (Manager, newManager)
 import           Database.Persist
 import           Database.Persist.Sqlite
 import           Yesod
+import           Yesod.Static
 import           Yesod.Default.Util
 import           Yesod.Auth
 import           Yesod.Auth.BrowserId
@@ -26,11 +27,17 @@ import Debug.Trace
 import Model
 import Examples
 
+staticFiles "src/static"
+
 data AppBackend = AppBackend
     { httpManager :: Manager
     , sqlBackend  :: SqlBackend
     , root        :: Text
+    , staticBackend   :: Static
     }
+
+getStatic (App backend) = staticBackend backend
+
 data App = App AppBackend
 
 mkYesod "App" [parseRoutes|
@@ -40,6 +47,7 @@ mkYesod "App" [parseRoutes|
 /message/#Integer MessageR GET POST
 /addface FaceR GET POST
 /profile ProfileR GET POST
+/static StaticR Static getStatic
 |]
 
 instance Yesod App where
@@ -75,6 +83,7 @@ instance Yesod App where
             <html>
                 <head>
                     <title>#{title}
+                    <link rel=stylesheet type=text/css href=@{StaticR style_page_css}>
                     ^{headTags}
                 <body>
                     <header>
@@ -339,7 +348,8 @@ main = runNoLoggingT $ withSqliteConn "50faces" $ \conn -> liftIO $
     do
         man <- newManager
         root <- fmap pack $ getEnv "APPROOT"
-        let backend = AppBackend man conn root
+        static@(Static settings) <- static "src/static"
+        let backend = AppBackend man conn root static
         runSqlConn (runMigration migrateAll) conn
         runSqlConn loadExamples conn
         warpEnv $ App backend
