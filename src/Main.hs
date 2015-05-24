@@ -86,23 +86,23 @@ instance Yesod App where
                     <link rel=stylesheet type=text/css href=@{StaticR style_page_css}>
                     ^{headTags}
                 <body>
-                    <header>
-                        <span>
+                    <header .header>
+                        <span .logo>
                             <a href=@{HomeR}>50 Faces
 
                         $maybe id <- maid
-                            <span>
+                            <span .profile>
                                 $maybe face <- mface
                                     <a href=@{FaceR}>
                                         <img src=#{faceImage face}>
                                 $maybe profile <- mprofile
-                                    <a href=@{ProfileR}>#{profileName profile}
+                                    <a .name href=@{ProfileR}>#{profileName profile}
                                 $nothing
-                                    <a href=@{ProfileR}>New User
-                                <a href=@{AuthR LogoutR}>Logout
+                                    <a .name href=@{ProfileR}>New User
+                                <a .logout href=@{AuthR LogoutR}>Logout
                         $nothing
-                            <span>
-                                <a href=@{AuthR LoginR}>Sign up or login
+                            <span .profile>
+                                <a .login href=@{AuthR LoginR}>Sign up or login
 
                     $maybe msg <- mmsg
                         <div #message>#{msg}
@@ -348,7 +348,7 @@ main = runNoLoggingT $ withSqliteConn "50faces" $ \conn -> liftIO $
     do
         man <- newManager
         root <- fmap pack $ getEnv "APPROOT"
-        static@(Static settings) <- static "src/static"
+        static@(Static settings) <- staticDevel "src/static"
         let backend = AppBackend man conn root static
         runSqlConn (runMigration migrateAll) conn
         runSqlConn loadExamples conn

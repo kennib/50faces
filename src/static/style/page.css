@@ -1,4 +1,44 @@
-header {
-    height: 28px;
+body {
+    margin: 0px;
+}
+
+.header {
+    height: 48px;
     background: #eee;
 }
+
+    .header .logo {
+        display: inline-block;
+        line-height: 40px;
+        font-size: 40px;
+        margin: 4px;
+        vertical-align: top;
+    }
+
+    .header .profile {
+        float: right;
+        line-height: 0px;
+        background: #e1e1e1;
+    }
+        .header .profile a {
+            text-decoration: none;
+        }
+
+        .header .profile img {
+            height: 40px;
+            margin: 4px;
+        }
+
+        .header .profile .name,
+        .header .profile .login,
+        .header .profile .logout {
+            display: inline-block;
+            line-height: 18px;
+            font-size: 18px;
+            margin: 15px;
+            vertical-align: top;
+        }
+
+        .header .profile .name {
+            font-weight: bold;
+        }
