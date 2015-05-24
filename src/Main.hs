@@ -105,7 +105,7 @@ instance Yesod App where
                                 <a .login href=@{AuthR LoginR}>Sign up or login
 
                     $maybe msg <- mmsg
-                        <div #message>#{msg}
+                        <div .message>#{msg}
 
                     ^{bodyTags}
         |]

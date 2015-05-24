@@ -42,3 +42,8 @@ body {
         .header .profile .name {
             font-weight: bold;
         }
+
+.message {
+    padding: 10px;
+    background: #ccc;
+}
