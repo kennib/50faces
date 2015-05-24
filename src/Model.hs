@@ -43,6 +43,11 @@ Friend
     time UTCTime
     current Bool
     deriving Typeable
+Message
+    from UserId
+    to UserId
+    message Text
+    time UTCTime
 |]
 
 notCurrent current filters = updateWhere ([current ==. True] ++ filters) [current =. False]

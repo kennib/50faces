@@ -49,7 +49,6 @@ instance Yesod App where
     isAuthorized (MessageR id) _ = isLoggedIn
 
     isAuthorized FaceR _ = isLoggedIn
-    isAuthorized FaceR _ = isLoggedIn
     isAuthorized ProfileR _ = isLoggedIn
 
     isAuthorized _ _ = return Authorized
@@ -145,6 +144,17 @@ getMessageR friendId = do
     let friendKey = toSqlKey (fromInteger friendId)
     maid <- maybeAuthId
 
+    ((result, widget), enctype) <- case maid of
+        Just id -> runFormPost $ messageForm id friendKey
+        Nothing -> error "No user"
+
+    mmessage <- case (result, maid) of
+        (FormSuccess message, Just user) -> do
+            mmessage <- runDB $ do
+                insert (message :: Message)
+            return $ Just mmessage
+        _ -> return Nothing
+
     mface <- do
         mface <- runDB $ selectFirst [FaceUser ==. friendKey, FaceCurrent ==. True] [Desc FaceTime]
         return $ fmap entityVal $ mface
@@ -152,6 +162,10 @@ getMessageR friendId = do
     mprofile <- do
         mprofile <- runDB $ selectFirst [ProfileUser ==. friendKey, ProfileCurrent ==. True] [Desc ProfileTime]
         return $ fmap entityVal $ mprofile
+
+    messages <- do
+        messages <- runDB $ selectList [MessageTo ==. friendKey] [Desc MessageTime, LimitTo 50]
+        return $ reverse $ fmap entityVal messages
 
     defaultLayout $ do
         setTitle $ case mprofile of
@@ -163,13 +177,25 @@ getMessageR friendId = do
                 $maybe face <- mface
                     <img src=#{faceImage face}>
                 <p>#{profileName profile}
-                <textarea>
+
+                $forall message <- messages
+                    <p>#{messageMessage message}
+
+                <form method=post action=@{MessageR friendId} enctype=#{enctype}>
+                    ^{widget}
+                    <input type=submit value="Post message">
             $nothing
                 <p>No one exists with ID #{friendId}
         |]
 
 postMessageR :: Integer -> Handler Html
 postMessageR = getMessageR
+
+messageForm from to = renderDivs $ Message
+    <$> pure from
+    <*> pure to
+    <*> areq textField "Message" Nothing
+    <*> lift (liftIO getCurrentTime)
 
 getFaceR :: Handler Html
 getFaceR = do
