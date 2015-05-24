@@ -22,8 +22,6 @@ import           Yesod.Auth.BrowserId
 import           Yesod.Auth.GoogleEmail
 import           System.Environment
 
-import Debug.Trace
-
 import Model
 import Examples
 
