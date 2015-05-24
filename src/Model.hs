@@ -30,13 +30,13 @@ Profile
     location Text Maybe
     time UTCTime
     current Bool
-    deriving Typeable
+    deriving Typeable Ord Eq
 Face
     user UserId
     image Text
     time UTCTime
     current Bool
-    deriving Typeable
+    deriving Typeable Ord Eq
 Friend
     user UserId
     friend UserId

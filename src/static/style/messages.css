@@ -8,12 +8,47 @@
 }
 
     .messages .message {
+        min-height: 92px;
         margin: 16px;
     }
 
     .messages .message:nth-child(even) {
         background: #eee;
     }
+
+        .messages .message .message-profile {
+            position: relative;
+            height: 92px;
+            width: 92px;
+            float: left;
+            margin-right: 8px;
+            margin-bottom: 8px;
+            overflow: hidden;
+        }
+
+            .messages .message .message-profile img {
+                width: 92px;
+                height: auto;
+            }
+
+            .messages .message .message-profile p {
+                display: block;
+                position: absolute;
+                bottom: 0px;
+
+                width: 92px;
+                margin: 0px;
+                padding-top: 4px;
+                padding-bottom: 4px;
+
+                font-size: 16px;
+                line-height: 16px;
+                vertical-align: text-bottom;
+                text-align: center;
+
+                color: #111;
+                background-color: rgba(255, 255, 255, 0.8);
+            }
 
 .message-post {
     display: block;

@@ -6,6 +6,7 @@
 {-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell #-}
 {-# LANGUAGE GADTs,OverloadedStrings,FlexibleContexts, FlexibleInstances #-}
 import           Data.Monoid                 ((<>))
+import qualified Data.Map as Map
 import           Control.Applicative
 import           Control.Monad.Logger        (runNoLoggingT)
 import           Data.Default                (def)
@@ -215,6 +216,18 @@ getMessageR friendId = do
         messages <- runDB $ selectList [MessageTo ==. friendKey] [Desc MessageTime, LimitTo 50]
         return $ reverse $ fmap entityVal messages
 
+    profiles <- fmap (map entityVal) $ do
+        runDB $ selectList [ProfileUser <-. map messageFrom messages, ProfileCurrent ==. True] [Desc ProfileTime]
+
+    faces <- fmap (map entityVal) $ do
+        runDB $ selectList [FaceUser <-. map messageFrom messages, FaceCurrent ==. True] [Desc FaceTime]
+
+    let userProfiles = Map.fromList $ zip (map profileUser profiles) profiles
+    let messageProfile = (flip Map.lookup) userProfiles . messageFrom
+
+    let userFaces = Map.fromList $ zip (map faceUser faces) faces
+    let messageFace = (flip Map.lookup) userFaces . messageFrom
+
     defaultLayout $ do
         setTitle $ case mprofile of
             Just profile-> toHtml $ "Message " <> profileName profile
@@ -231,7 +244,13 @@ getMessageR friendId = do
 
                 <ul .messages>
                     $forall message <- messages
-                        <li .message>#{messageMessage message}
+                        <li .message>
+                            <div .message-profile>
+                                $maybe face <- messageFace message
+                                    <img src=#{faceImage face}>
+                                $maybe profile <- messageProfile message
+                                    <p>#{profileName profile}
+                            #{messageMessage message}
 
                 <form .message-post method=post action=@{MessageR friendId} enctype=#{enctype}>
                     ^{widget}
