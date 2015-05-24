@@ -112,6 +112,7 @@ getHomeR = do
 
 getFacesR :: Handler Html
 getFacesR = do
+    let profileId = toInteger . fromSqlKey . profileUser
     maid <- maybeAuthId
 
     friends <- fmap (map (friendFriend . entityVal)) $ case maid of
@@ -135,8 +136,9 @@ getFacesR = do
                 <ul>
                     $forall (profile, face) <- friendlyFaces
                         <li>
-                            <img src=#{faceImage face}>
-                            <p>#{profileName profile}
+                            <a href=@{MessageR (profileId profile)}>
+                                <img src=#{faceImage face}>
+                                <p>#{profileName profile}
         |]
 
 getMessageR :: Integer -> Handler Html
