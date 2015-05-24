@@ -176,16 +176,17 @@ getFacesR = do
 
     defaultLayout $ do
         setTitle "Friendly faces"
+        addStylesheet $ StaticR style_faces_css
         [whamlet|
             $if null faces
                 <p>No friendly faces
             $else
-                <ul>
+                <ul .faces>
                     $forall (profile, face) <- friendlyFaces
-                        <li>
+                        <li .face>
                             <a href=@{MessageR (profileId profile)}>
                                 <img src=#{faceImage face}>
-                                <p>#{profileName profile}
+                                <p .name>#{profileName profile}
         |]
 
 getMessageR :: Integer -> Handler Html

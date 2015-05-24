@@ -1,0 +1,49 @@
+.faces {
+    display: block;
+
+    list-style-type: none;
+    -webkit-margin-before: 0px;
+    -webkit-margin-after: 0px;
+    -webkit-margin-start: 0px;
+    -webkit-margin-end: 0px;
+    -webkit-padding-start: 0px;
+
+    font-size: 0px;
+    text-align: center;
+}
+
+    .faces .face {
+        display: inline-block;
+        position: relative;
+        width: 192px;
+        height: 216px;
+        margin: 0px;
+        overflow: hidden;
+    }
+        .faces .face a {
+            text-decoration: none;
+        }
+
+        .faces .face img {
+            width: auto;
+            height: 216px;
+        }
+
+        .faces .face .name {
+            display: block;
+            position: absolute;
+            bottom: 0px;
+
+            width: 192px;
+            margin: 0px;
+            padding-top: 4px;
+            padding-bottom: 4px;
+
+            font-size: 16px;
+            line-height: 16px;
+            vertical-align: text-bottom;
+            text-align: center;
+
+            color: #111;
+            background-color: rgba(255, 255, 255, 0.8);
+        }
