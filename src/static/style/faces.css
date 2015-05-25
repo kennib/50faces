@@ -26,7 +26,15 @@
 
         .faces .face img {
             width: auto;
-            height: 216px;
+            height: 222px;
+            margin: -3px;
+            filter: blur(2px);
+            -webkit-filter: blur(2px);
+        }
+
+        .faces .face:hover img {
+            filter: blur(0px);
+            -webkit-filter: blur(0px)
         }
 
         .faces .face .name {
@@ -46,4 +54,8 @@
 
             color: #111;
             background-color: rgba(255, 255, 255, 0.8);
+        }
+
+        .faces .face:hover .name {
+            opacity: 1.0;
         }

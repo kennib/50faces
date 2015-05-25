@@ -33,5 +33,5 @@
     }
 
 .faces .face .name {
-    display: none;
+    opacity: 0;
 }
