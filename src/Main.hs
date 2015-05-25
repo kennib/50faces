@@ -100,7 +100,7 @@ instance Yesod App where
                                     <a .name href=@{ProfileR}>New User
                                 <a .logout href=@{AuthR LogoutR}>Logout
                         $nothing
-                            <span .profile>
+                            <span .page-profile>
                                 <a .login href=@{AuthR LoginR}>Sign up or login
 
                     $maybe msg <- mmsg
