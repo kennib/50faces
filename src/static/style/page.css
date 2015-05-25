@@ -1,5 +1,10 @@
+@import url(https://fonts.googleapis.com/css?family=BenchNine:300,400,700|Kranky);
+
 body {
     margin: 0px;
+
+    font-size: 18px;
+    font-family: 'BenchNine' sans-serif;
 }
 
 .header {
@@ -9,11 +14,17 @@ body {
 
     .header .logo {
         display: inline-block;
-        line-height: 40px;
-        font-size: 40px;
         margin: 4px;
         vertical-align: top;
+
+        font-size: 40px;
+        line-height: 40px;
+        font-family: 'Kranky';
     }
+
+        .header .logo a {
+            text-decoration: none;
+        }
 
     .header .page-profile {
         float: right;
