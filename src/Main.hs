@@ -56,6 +56,16 @@ mkYesod "App" [parseRoutes|
 /static StaticR Static getStatic
 |]
 
+getFace :: Key User -> Handler (Maybe Face)
+getFace user = do
+    mface <- runDB $ selectFirst [FaceUser ==. user, FaceCurrent ==. True] [Desc FaceTime]
+    return $ fmap entityVal mface
+
+getProfile :: Key User -> Handler (Maybe Profile)
+getProfile user = do
+    mprofile <- runDB $ selectFirst [ProfileUser ==. user, ProfileCurrent ==. True] [Desc ProfileTime]
+    return $ fmap entityVal mprofile
+
 instance Yesod App where
     approot = ApprootMaster $ \(App backend) -> root backend
 
@@ -73,14 +83,10 @@ instance Yesod App where
 
         maid <- maybeAuthId
         mface <- case maid of
-            Just user -> do
-                mface <- runDB $ selectFirst [FaceUser ==. user, FaceCurrent ==. True] [Desc FaceTime]
-                return $ fmap entityVal mface
+            Just user -> getFace user
             Nothing -> return Nothing
         mprofile <- case maid of
-            Just user -> do
-                mprofile <- runDB $ selectFirst [ProfileUser ==. user, ProfileCurrent ==. True] [Desc ProfileTime]
-                return $ fmap entityVal mprofile
+            Just user -> getProfile user
             Nothing -> return Nothing
 
         withUrlRenderer $(hamletFile "src/templates/page.hamlet")
@@ -167,13 +173,8 @@ getMessageR friendId = do
             return $ Just mmessage
         _ -> return Nothing
 
-    mface <- do
-        mface <- runDB $ selectFirst [FaceUser ==. friendKey, FaceCurrent ==. True] [Desc FaceTime]
-        return $ fmap entityVal $ mface
-
-    mprofile <- do
-        mprofile <- runDB $ selectFirst [ProfileUser ==. friendKey, ProfileCurrent ==. True] [Desc ProfileTime]
-        return $ fmap entityVal $ mprofile
+    mface <- getFace friendKey
+    mprofile <- getProfile friendKey
 
     messages <- do
         messages <- runDB $ selectList [MessageTo ==. friendKey] [Desc MessageTime, LimitTo 50]
@@ -221,9 +222,7 @@ getFaceR = do
                 notCurrent FaceCurrent [FaceUser ==. user]
                 insert face
             return $ Just face
-        (_, Just user) -> do
-            mface <- runDB $ selectFirst [FaceUser ==. user, FaceCurrent ==. True] [Desc FaceTime]
-            return $ fmap entityVal mface
+        (_, Just user) -> getFace user
         _ -> return Nothing
 
     defaultLayout $ do
@@ -243,9 +242,7 @@ getProfileR :: Handler Html
 getProfileR = do
     maid <- maybeAuthId
     mprofile <- case maid of
-        Just user -> do
-            mprofile <- runDB $ selectFirst [ProfileUser ==. user, ProfileCurrent ==. True] [Desc ProfileTime]
-            return $ fmap entityVal mprofile
+        Just user -> getProfile user
         Nothing -> return Nothing
 
     ((result, widget), enctype) <- case maid of
