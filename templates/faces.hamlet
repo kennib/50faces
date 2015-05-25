@@ -1,0 +1,9 @@
+$if null faces
+    <p>No friendly faces
+$else
+    <ul .faces>
+        $forall (profile, face) <- friendlyFaces
+            <li .face>
+                <a href=@{MessageR (profileId profile)}>
+                    <img src=#{faceImage face}>
+                    <p .name>#{profileName profile}

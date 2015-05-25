@@ -1,0 +1,8 @@
+$maybe face <- mface
+    <img src=#{faceImage face}>
+$nothing
+    <p>
+
+<form method=post action=@{FaceR} enctype=#{enctype}>
+    ^{widget}
+    <input type=submit value="Update your face">

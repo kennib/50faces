@@ -127,10 +127,7 @@ getHomeR = do
     case maid of
         Just id -> getFacesR
         Nothing -> defaultLayout
-            [whamlet|
-                <p>
-                    <a href=@{AuthR LoginR}>Sign up or login
-            |]
+            $(widgetFileNoReload def "home")
 
 getFacesR :: Handler Html
 getFacesR = do
@@ -152,17 +149,7 @@ getFacesR = do
     defaultLayout $ do
         setTitle "Friendly faces"
         addStylesheet $ StaticR style_faces_css
-        [whamlet|
-            $if null faces
-                <p>No friendly faces
-            $else
-                <ul .faces>
-                    $forall (profile, face) <- friendlyFaces
-                        <li .face>
-                            <a href=@{MessageR (profileId profile)}>
-                                <img src=#{faceImage face}>
-                                <p .name>#{profileName profile}
-        |]
+        $(widgetFileNoReload def "faces")
 
 getMessageR :: Integer -> Handler Html
 getMessageR friendId = do
@@ -210,30 +197,7 @@ getMessageR friendId = do
             Nothing -> "Message no one"
 
         addStylesheet $ StaticR style_messages_css
-
-        [whamlet|
-            $maybe profile <- mprofile
-                <aside .profile>
-                    $maybe face <- mface
-                        <img src=#{faceImage face}>
-                    <p>#{profileName profile}
-
-                <ul .messages>
-                    $forall message <- messages
-                        <li .message>
-                            <div .message-profile>
-                                $maybe face <- messageFace message
-                                    <img src=#{faceImage face}>
-                                $maybe profile <- messageProfile message
-                                    <p>#{profileName profile}
-                            #{messageMessage message}
-
-                <form .message-post method=post action=@{MessageR friendId} enctype=#{enctype}>
-                    ^{widget}
-                    <input type=submit value="Post message">
-            $nothing
-                <p>No one exists with ID #{friendId}
-        |]
+        $(widgetFileNoReload def "messages")
 
 postMessageR :: Integer -> Handler Html
 postMessageR = getMessageR
@@ -264,15 +228,7 @@ getFaceR = do
 
     defaultLayout $ do
         setTitle "Update your face"
-        [whamlet|
-            $maybe face <- mface
-                <img src=#{faceImage face}>
-            $nothing
-                <p>
-            <form method=post action=@{FaceR} enctype=#{enctype}>
-                ^{widget}
-                <input type=submit value="Update your face">
-        |]
+        $(widgetFileNoReload def "face")
 
 postFaceR :: Handler Html
 postFaceR = getFaceR
@@ -310,15 +266,7 @@ getProfileR = do
 
     defaultLayout $ do
         setTitle "Update your profile"
-        [whamlet|
-            $maybe profile <- mprofile
-                <p>#{profileName profile}'s Profile
-            $nothing
-                <p>You don't have a profile yet!
-            <form method=post action=@{ProfileR} enctype=#{enctype}>
-                ^{widget}
-                <input type=submit value="Update your profile">
-        |]
+        $(widgetFileNoReload def "profile")
 
 postProfileR :: Handler Html
 postProfileR = getProfileR

@@ -1,0 +1,21 @@
+$maybe profile <- mprofile
+    <aside .profile>
+        $maybe face <- mface
+            <img src=#{faceImage face}>
+        <p>#{profileName profile}
+
+    <ul .messages>
+        $forall message <- messages
+            <li .message>
+                <div .message-profile>
+                    $maybe face <- messageFace message
+                        <img src=#{faceImage face}>
+                    $maybe profile <- messageProfile message
+                        <p>#{profileName profile}
+                #{messageMessage message}
+
+    <form .message-post method=post action=@{MessageR friendId} enctype=#{enctype}>
+        ^{widget}
+        <input type=submit value="Post message">
+$nothing
+    <p>No one exists with ID #{friendId}

@@ -1,0 +1,8 @@
+$maybe profile <- mprofile
+    <p>#{profileName profile}'s Profile
+$nothing
+    <p>You don't have a profile yet!
+
+<form method=post action=@{ProfileR} enctype=#{enctype}>
+    ^{widget}
+    <input type=submit value="Update your profile">
