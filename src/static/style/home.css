@@ -17,6 +17,19 @@
     font-size: 24px;
     line-height: 24px;
 }
+    .login-banner .signup,
+    .login-banner .login {
+        display: inline-block;
+        padding: 12px;
+        text-decoration: none;
+    }
+
+    .login-banner .signup {
+        background: #e1e1e1;
+    }
+    .login-banner .login {
+        background: #eee;
+    }
 
 .faces .face .name {
     display: none;

@@ -8,5 +8,8 @@
                 <img src=#{faceImage face}>
                 <p .name>#{profileName profile}
 
-<p .login-banner>
-    <a href=@{AuthR LoginR}>Sign up or login for your own 50 faces
+<div .login-banner>
+    <a .signup href=@{AuthR LoginR}>Sign up
+    or
+    <a .login href=@{AuthR LoginR}>Login
+    <p>to see 50 faces unique to you

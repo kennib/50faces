@@ -3,6 +3,10 @@
 {-# LANGUAGE OverloadedStrings, GADTs, FlexibleContexts #-}
 module Examples where
 
+import Data.Text (Text)
+import Data.Monoid ((<>))
+
+import Control.Monad (mapM, zipWithM)
 import Control.Monad.IO.Class (liftIO)
 
 import Database.Persist
@@ -16,21 +20,27 @@ loadExamples :: SqlPersistT IO ()
 loadExamples = do
     now <- liftIO getCurrentTime
 
-    jenny  <- fmap entityKey $ upsert (User "jenny@example.com" Nothing Nothing True) []
-    george <- fmap entityKey $ upsert (User "george@example.com" Nothing Nothing True) []
-    kenni  <- fmap entityKey $ upsert (User "kenni.bawden@gmail.com" Nothing Nothing True) []
+    let users = ["Jenny", "George", "Ashley", "Danni", "Peter", "Isaac"]
+    let faces = ["http://i.imgur.com/WWcyFAUb.jpg", "http://i.imgur.com/rlsVPERb.jpg", "http://i.imgur.com/4ydgFonb.jpg", "http://i.imgur.com/lWBwwT6b.jpg", "http://i.imgur.com/OtqLwRqb.jpg", "http://i.imgur.com/yhozP6yb.jpg"]
 
-    notCurrent ProfileCurrent $ [FilterOr [ProfileUser ==. jenny, ProfileUser ==. george]]
-    insert (Profile jenny "Jenny" Nothing Nothing Nothing now True)
-    insert (Profile george "The Big G" Nothing Nothing Nothing now True)
-
-    notCurrent FaceCurrent $ [FilterOr [FaceUser ==. jenny, FaceUser ==. george, FaceUser ==. kenni]]
-    insert (Face jenny "http://i.imgur.com/WWcyFAUb.jpg" now True)
-    insert (Face george "http://i.imgur.com/rlsVPERb.jpg" now True)
-    insert (Face kenni "http://i.imgur.com/PUZeZ6Ab.jpg" now True)
+    userIds <- zipWithM loadExample users faces
+    kenni <- loadExample "Kenni" "http://i.imgur.com/PUZeZ6Ab.jpg"
 
     notCurrent FriendCurrent $ [FilterOr [FriendUser ==. kenni]]
-    insert (Friend kenni jenny now True)
-    insert (Friend kenni george now True)
+    mapM (\user -> insert (Friend kenni user now True)) userIds
 
     return ()
+
+loadExample :: Text -> Text -> SqlPersistT IO (Key User)
+loadExample name face = do
+    now <- liftIO getCurrentTime
+
+    user <- fmap entityKey $ upsert (User (name <> "@example.com") Nothing Nothing True) []
+
+    notCurrent ProfileCurrent [ProfileUser ==. user]
+    insert (Profile user name Nothing Nothing Nothing now True)
+
+    notCurrent FaceCurrent [FaceUser ==. user]
+    insert (Face user face now True)
+
+    return user
