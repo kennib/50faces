@@ -1,2 +1,12 @@
-<p>
-    <a href=@{AuthR LoginR}>Sign up or login
+<p .banner>
+   Explore the stories of 50 faces from 50 people with 50 different walks of life you may rarely see.
+
+<ul .faces>
+    $forall (profile, face) <- friendlyFaces
+        <li .face>
+            <a href=@{MessageR (profileId profile)}>
+                <img src=#{faceImage face}>
+                <p .name>#{profileName profile}
+
+<p .login-banner>
+    <a href=@{AuthR LoginR}>Sign up or login for your own 50 faces

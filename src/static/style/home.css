@@ -1,0 +1,23 @@
+.banner,
+.login-banner {
+    display: block;
+    padding: 24px;
+
+    text-align: center;
+
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.banner {
+    top: 60px;
+}
+
+.login-banner {
+    top: 220px;
+    font-size: 24px;
+    line-height: 24px;
+}
+
+.faces .face .name {
+    display: none;
+}

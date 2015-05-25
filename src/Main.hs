@@ -56,6 +56,8 @@ mkYesod "App" [parseRoutes|
 /static StaticR Static getStatic
 |]
 
+profileId = toInteger . fromSqlKey . profileUser
+
 getFace :: Key User -> Handler (Maybe Face)
 getFace user = do
     mface <- runDB $ selectFirst [FaceUser ==. user, FaceCurrent ==. True] [Desc FaceTime]
@@ -132,12 +134,26 @@ getHomeR = do
     maid <- maybeAuthId
     case maid of
         Just id -> getFacesR
-        Nothing -> defaultLayout
-            $(widgetFileNoReload def "home")
+        Nothing -> do
+            friends <- do
+                friends <- runDB $ selectList [FriendCurrent ==. True] [Desc FriendTime]
+                return $ map (friendFriend . entityVal) friends
+
+            profiles <- fmap (map entityVal) $ do
+                runDB $ selectList [ProfileUser <-. friends, ProfileCurrent ==. True] [Desc ProfileTime]
+
+            faces <- fmap (map entityVal) $ do
+                runDB $ selectList [FaceUser <-. friends, FaceCurrent ==. True] [Desc FaceTime]
+
+            let friendlyFaces = zip profiles faces
+
+            defaultLayout $ do
+                addStylesheet $ StaticR style_faces_css
+                addStylesheet $ StaticR style_home_css
+                $(widgetFileNoReload def "home")
 
 getFacesR :: Handler Html
 getFacesR = do
-    let profileId = toInteger . fromSqlKey . profileUser
     maid <- maybeAuthId
 
     friends <- fmap (map (friendFriend . entityVal)) $ case maid of
