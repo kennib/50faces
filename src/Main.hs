@@ -5,26 +5,33 @@
 {-# LANGUAGE TypeFamilies          #-}
 {-# LANGUAGE TypeFamilies, QuasiQuotes, MultiParamTypeClasses, TemplateHaskell #-}
 {-# LANGUAGE GADTs,OverloadedStrings,FlexibleContexts, FlexibleInstances #-}
-import           Data.Monoid                 ((<>))
-import qualified Data.Map as Map
+
 import           Control.Applicative
 import           Control.Monad.Logger        (runNoLoggingT)
+
 import           Data.Default                (def)
 import           Data.Text                   (Text, pack)
 import           Data.Time
-import           Network.HTTP.Client.Conduit (Manager, newManager)
+import           Data.Monoid                 ((<>))
+import qualified Data.Map as Map
+
 import           Database.Persist
 import           Database.Persist.Sqlite
+
+import           Network.HTTP.Client.Conduit (Manager, newManager)
+
 import           Yesod
 import           Yesod.Static
 import           Yesod.Default.Util
 import           Yesod.Auth
 import           Yesod.Auth.BrowserId
 import           Yesod.Auth.GoogleEmail
+import           Text.Hamlet
+
 import           System.Environment
 
-import Model
-import Examples
+import           Model
+import           Examples
 
 staticFiles "src/static"
 
@@ -76,38 +83,7 @@ instance Yesod App where
                 return $ fmap entityVal mprofile
             Nothing -> return Nothing
 
-        withUrlRenderer [hamlet|
-            $doctype 5
-
-            <html>
-                <head>
-                    <title>#{title}
-                    <link rel=stylesheet type=text/css href=@{StaticR style_page_css}>
-                    ^{headTags}
-                <body>
-                    <header .header>
-                        <span .logo>
-                            <a href=@{HomeR}>50 Faces
-
-                        $maybe id <- maid
-                            <span .page-profile>
-                                $maybe face <- mface
-                                    <a href=@{FaceR}>
-                                        <img src=#{faceImage face}>
-                                $maybe profile <- mprofile
-                                    <a .name href=@{ProfileR}>#{profileName profile}
-                                $nothing
-                                    <a .name href=@{ProfileR}>New User
-                                <a .logout href=@{AuthR LogoutR}>Logout
-                        $nothing
-                            <span .page-profile>
-                                <a .login href=@{AuthR LoginR}>Sign up or login
-
-                    $maybe msg <- mmsg
-                        <div .page-message>#{msg}
-
-                    ^{bodyTags}
-        |]
+        withUrlRenderer $(hamletFile "src/templates/page.hamlet")
 
 instance YesodPersist App where
     type YesodPersistBackend App = SqlBackend

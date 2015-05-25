@@ -1,0 +1,30 @@
+$doctype 5
+
+<html>
+    <head>
+        <title>#{title}
+        <link rel=stylesheet type=text/css href=@{StaticR style_page_css}>
+        ^{headTags}
+    <body>
+        <header .header>
+            <span .logo>
+                <a href=@{HomeR}>50 Faces
+
+            $maybe id <- maid
+                <span .page-profile>
+                    $maybe face <- mface
+                        <a href=@{FaceR}>
+                            <img src=#{faceImage face}>
+                    $maybe profile <- mprofile
+                        <a .name href=@{ProfileR}>#{profileName profile}
+                    $nothing
+                        <a .name href=@{ProfileR}>New User
+                    <a .logout href=@{AuthR LogoutR}>Logout
+            $nothing
+                <span .page-profile>
+                    <a .login href=@{AuthR LoginR}>Sign up or login
+
+        $maybe msg <- mmsg
+            <div .page-message>#{msg}
+
+        ^{bodyTags}
