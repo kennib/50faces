@@ -72,7 +72,6 @@ instance Yesod App where
     approot = ApprootMaster $ \(App backend) -> root backend
 
     isAuthorized FacesR _ = isLoggedIn
-    isAuthorized (MessageR id) _ = isLoggedIn
 
     isAuthorized FaceR _ = isLoggedIn
     isAuthorized ProfileR _ = isLoggedIn
@@ -178,12 +177,12 @@ getMessageR friendId = do
     let friendKey = toSqlKey (fromInteger friendId)
     maid <- maybeAuthId
 
-    ((result, widget), enctype) <- case maid of
-        Just id -> runFormPost $ messageForm id friendKey
-        Nothing -> error "No user"
+    mform <- case maid of
+        Just id -> fmap Just $ runFormPost $ messageForm id friendKey
+        Nothing -> return Nothing
 
-    mmessage <- case (result, maid) of
-        (FormSuccess message, Just user) -> do
+    mmessage <- case (mform, maid) of
+        (Just ((FormSuccess message, _), _), Just user) -> do
             mmessage <- runDB $ do
                 insert (message :: Message)
             return $ Just mmessage

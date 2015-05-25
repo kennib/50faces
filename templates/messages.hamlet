@@ -14,8 +14,14 @@ $maybe profile <- mprofile
                         <p>#{profileName profile}
                 #{messageMessage message}
 
-    <form .message-post method=post action=@{MessageR friendId} enctype=#{enctype}>
-        ^{widget}
-        <input type=submit value="Post message">
+    $maybe ((_, widget), enctype) <- mform
+        <form .message-post method=post action=@{MessageR friendId} enctype=#{enctype}>
+            ^{widget}
+            <input type=submit value="Post message">
+    $nothing
+        <p>
+           <a .login href=@{AuthR LoginR}>Login
+           to post a message
+
 $nothing
     <p>No one exists with ID #{friendId}
