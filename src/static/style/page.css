@@ -42,6 +42,7 @@ body {
 
         .header .page-profile .name,
         .header .page-profile .login,
+        .header .page-profile .faces,
         .header .page-profile .logout {
             display: inline-block;
             line-height: 18px;

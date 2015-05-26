@@ -19,6 +19,7 @@ $doctype 5
                         <a .name href=@{ProfileR}>#{profileName profile}
                     $nothing
                         <a .name href=@{ProfileR}>New User
+                    <a .faces href=@{FacesR}>Faces
                     <a .logout href=@{AuthR LogoutR}>Logout
             $nothing
                 <span .page-profile>

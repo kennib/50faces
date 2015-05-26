@@ -101,7 +101,7 @@ instance YesodPersist App where
 instance YesodAuth App where
     type AuthId App = UserId
 
-    loginDest _ = HomeR
+    loginDest _ = FacesR
     logoutDest _ = HomeR
 
     authPlugins _ =
@@ -131,25 +131,23 @@ isLoggedIn = do
 getHomeR :: Handler Html
 getHomeR = do
     maid <- maybeAuthId
-    case maid of
-        Just id -> getFacesR
-        Nothing -> do
-            friends <- do
-                friends <- runDB $ selectList [FriendCurrent ==. True] [Desc FriendTime]
-                return $ map (friendFriend . entityVal) friends
+    
+    friends <- do
+        friends <- runDB $ selectList [FriendCurrent ==. True] [Desc FriendTime]
+        return $ map (friendFriend . entityVal) friends
 
-            profiles <- fmap (map entityVal) $ do
-                runDB $ selectList [ProfileUser <-. friends, ProfileCurrent ==. True] [Desc ProfileTime]
+    profiles <- fmap (map entityVal) $ do
+        runDB $ selectList [ProfileUser <-. friends, ProfileCurrent ==. True] [Desc ProfileTime]
 
-            faces <- fmap (map entityVal) $ do
-                runDB $ selectList [FaceUser <-. friends, FaceCurrent ==. True] [Desc FaceTime]
+    faces <- fmap (map entityVal) $ do
+        runDB $ selectList [FaceUser <-. friends, FaceCurrent ==. True] [Desc FaceTime]
 
-            let friendlyFaces = zip profiles faces
+    let friendlyFaces = zip profiles faces
 
-            defaultLayout $ do
-                addStylesheet $ StaticR style_faces_css
-                addStylesheet $ StaticR style_home_css
-                $(widgetFileNoReload def "home")
+    defaultLayout $ do
+        addStylesheet $ StaticR style_faces_css
+        addStylesheet $ StaticR style_home_css
+        $(widgetFileNoReload def "home")
 
 getFacesR :: Handler Html
 getFacesR = do
