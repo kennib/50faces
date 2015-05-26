@@ -26,7 +26,11 @@ import           Yesod.Default.Util
 import           Yesod.Auth
 import           Yesod.Auth.BrowserId
 import           Yesod.Auth.GoogleEmail
+import           Yesod.Auth.Facebook.ServerSide
+import           Yesod.Facebook
 import           Text.Hamlet
+
+import           Facebook                    (Credentials(..))
 
 import           System.Environment
 
@@ -40,6 +44,7 @@ data AppBackend = AppBackend
     , sqlBackend  :: SqlBackend
     , root        :: Text
     , staticBackend   :: Static
+    , fbCreds     :: Credentials
     }
 
 getStatic (App backend) = staticBackend backend
@@ -107,6 +112,7 @@ instance YesodAuth App where
     authPlugins _ =
         [ authBrowserId def
         , authGoogleEmail
+        , authFacebook ["user_about_me", "email"]
         ]
 
     -- Need to find the UserId for the given email address.
@@ -118,6 +124,11 @@ instance YesodAuth App where
                 Right userid -> userid -- existing user
 
     authHttpManager (App backend) = httpManager backend
+
+instance YesodFacebook App where
+    fbCredentials (App backend) = fbCreds backend
+    fbHttpManager (App backend) = httpManager backend
+    fbUseBetaTier _ = False
 
 instance RenderMessage App FormMessage where
     renderMessage _ _ = defaultFormMessage
@@ -305,7 +316,11 @@ main = runNoLoggingT $ withSqliteConn "50faces" $ \conn -> liftIO $
         man <- newManager
         root <- fmap pack $ getEnv "APPROOT"
         static@(Static settings) <- staticDevel "src/static"
-        let backend = AppBackend man conn root static
+        let fbCreds = Credentials "50people" "105423129793938" "19b642874ef16561acbf7dfd748dc16f"
+
+        let backend = AppBackend man conn root static fbCreds
+
         runSqlConn (runMigration migrateAll) conn
         runSqlConn loadExamples conn
+
         warpEnv $ App backend
