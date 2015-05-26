@@ -55,6 +55,23 @@ body {
             font-weight: bold;
         }
 
+.content {
+    display: block;
+    min-height: 100vh;
+}
+
+.footer {
+    padding: 24px;
+    text-align: right;
+
+    color: #222;
+    background: #eee;
+}
+
+    .footer .copy {
+        float: left;
+    }
+
 .page-message {
     padding: 10px;
     background: #ccc;

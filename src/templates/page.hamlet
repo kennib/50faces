@@ -28,4 +28,9 @@ $doctype 5
         $maybe msg <- mmsg
             <div .page-message>#{msg}
 
-        ^{bodyTags}
+        <content .content>
+            ^{bodyTags}
+
+        <footer .footer>
+            <span .copy>&copy; 2015 Kenni Bawden
+            <a href=@{AboutR}>About

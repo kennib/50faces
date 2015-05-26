@@ -53,6 +53,7 @@ data App = App AppBackend
 
 mkYesod "App" [parseRoutes|
 / HomeR GET
+/about AboutR GET
 /auth AuthR Auth getAuth
 /faces FacesR GET
 /message/#Integer MessageR GET POST
@@ -159,6 +160,12 @@ getHomeR = do
         addStylesheet $ StaticR style_faces_css
         addStylesheet $ StaticR style_home_css
         $(widgetFileNoReload def "home")
+
+
+getAboutR = do
+    defaultLayout $ do
+        setTitle "Friendly faces"
+        $(widgetFileNoReload def "about")
 
 getFacesR :: Handler Html
 getFacesR = do
