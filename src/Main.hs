@@ -35,6 +35,7 @@ import           Facebook                    (Credentials(..))
 import           System.Environment
 
 import           Model
+import           Diversity
 import           Examples
 
 staticFiles "src/static"
@@ -287,6 +288,7 @@ getProfileR = do
             runDB $ do
                 notCurrent ProfileCurrent [ProfileUser ==. user]
                 insert profile
+                setDiverseFriends user
             return $ Just profile
         (_, Just user) -> do
             return mprofile

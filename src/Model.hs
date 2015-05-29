@@ -30,7 +30,7 @@ Profile
     location Text Maybe
     time UTCTime
     current Bool
-    deriving Typeable Ord Eq
+    deriving Typeable Ord Eq Show
 Face
     user UserId
     image Text
