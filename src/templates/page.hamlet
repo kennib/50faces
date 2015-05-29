@@ -15,12 +15,17 @@ $doctype 5
                     $maybe face <- mface
                         <a href=@{FaceR}>
                             <img src=#{faceImage face}>
+                    $nothing
+                        <a href=@{FaceR}>
+                           <img src="/static/images/noface.png">
+
                     $maybe profile <- mprofile
                         <a .name href=@{ProfileR}>#{profileName profile}
                     $nothing
                         <a .name href=@{ProfileR}>New User
                     <a .faces href=@{FacesR}>Faces
                     <a .logout href=@{AuthR LogoutR}>Logout
+
             $nothing
                 <span .page-profile>
                     <a .login href=@{AuthR LoginR}>Sign up or login
